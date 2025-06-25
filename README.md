@@ -6,10 +6,11 @@ The script aggregates reactions based on a point system, allowing for quantitati
 
 ## Features
 
+-   **Granular Analysis**: Collects reactions on a per-user basis.
+-   **Comprehensive Summaries**: Displays summaries broken down by day, week, and user.
 -   **Robust and Maintainable**: Written in Python for better error handling and easier maintenance.
 -   **Multi-Repository Support**: Scans one or more specified repositories.
 -   **Date Range Filtering**: Collects data from Pull Requests created within a defined period.
--   **Comprehensive Comment Collection**: Gathers reactions from issue comments, review comments, and review summaries.
 -   **Flexible Output**: Can output data as a standard CSV or display a formatted summary directly in the terminal.
 -   **Analysis from File**: Can generate a summary from a previously saved CSV file, avoiding repeated API calls.
 
@@ -34,43 +35,58 @@ The script aggregates reactions based on a point system, allowing for quantitati
 
 The script is controlled via command-line arguments.
 
-### Basic Commands
+### CSV Output
 
--   **Collect data and output as CSV:**
-    ```bash
-    python3 fetch_reactions.py --repos owner/repo1 owner/repo2 > reactions.csv
-    ```
-    The `reactions.csv` file will look like this:
-    ```csv
-    date,repository,points
-    2025-06-25,owner/repo1,3
-    2025-06-26,owner/repo1,1
-    2025-06-26,owner/repo2,-1
-    ```
+Collect data and save it to a CSV file. The output now includes the username of the person who reacted.
 
--   **Display a summary directly:**
-    ```bash
-    python3 fetch_reactions.py --repos owner/repo1 --summary
-    ```
-    The output will look like this:
-    ```
-    --- Daily Summary ---
-    Date          | Reactions | Total Points | Average Points  
-    ------------------------------------------------------------
-    2025-06-25    | 1         | 3            | 3.00            
-    2025-06-26    | 2         | 0            | 0.00            
+```bash
+python3 fetch_reactions.py --repos owner/repo1 --all-users > reactions.csv
+```
 
-    --- Weekly Summary ---
-    Week          | Reactions | Total Points | Average Points  
-    ------------------------------------------------------------
-    2025-26       | 3         | 3            | 1.00            
-    ```
+The `reactions.csv` file will look like this:
+```csv
+date,repository,user,points
+2025-06-25,owner/repo1,some-user,3
+2025-06-26,owner/repo1,another-user,1
+2025-06-26,owner/repo2,dev-1,-1
+```
 
--   **Generate a summary from an existing file:**
-    ```bash
-    python3 fetch_reactions.py --file reactions.csv
-    ```
-    The output will be the same summary format as above.
+### Summary Output
+
+Display a formatted summary directly in the terminal. The summary now includes a **Per-User** breakdown.
+
+```bash
+python3 fetch_reactions.py --repos owner/repo1 --summary --all-users
+```
+
+The output will look like this:
+```
+--- Daily Summary ---
+Date          | Reactions | Total Points | Average Points  
+------------------------------------------------------------
+2025-06-25    | 1         | 3            | 3.00            
+2025-06-26    | 2         | 0            | 0.00            
+
+--- Weekly Summary ---
+Week          | Reactions | Total Points | Average Points  
+------------------------------------------------------------
+2025-26       | 3         | 3            | 1.00            
+
+--- Per-User Summary ---
+User                 | Reactions | Total Points | Average Points  
+-------------------------------------------------------------------
+some-user            | 1         | 3            | 3.00            
+another-user         | 1         | 1            | 1.00            
+dev-1                | 1         | -1           | -1.00           
+```
+
+### Generate Summary from File
+
+Generate the same three-part summary from a previously created CSV file.
+
+```bash
+python3 fetch_reactions.py --file reactions.csv
+```
 
 ### All Options
 
@@ -83,13 +99,7 @@ The script is controlled via command-line arguments.
 | `--summary`       | `-s`  | Show a formatted summary in the terminal instead of CSV output.               |
 | `--file FILE`     | `-f`  | Generate a summary from a specified CSV file instead of fetching new data.    |
 
-### Example: Get a summary of all user reactions for the last month
-
-```bash
-python3 fetch_reactions.py --repos microsoft/vscode --summary --all-users --start-date 2025-05-26
-```
-
-### Emoji Scoring System
+## Emoji Scoring System
 
 The script uses the following point system, which can be customized in the `POINTS_MAP` dictionary at the top of the script.
 
