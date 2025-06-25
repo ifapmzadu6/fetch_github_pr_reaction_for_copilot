@@ -79,7 +79,6 @@ To use this script, you need the following tools installed in your environment (
     --------------|-----------|--------------|----------------
     2025-26       | 7         | 16           | 2.29
     ```
-    ```
 
 ### Emoji Scoring System
 
