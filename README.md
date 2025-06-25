@@ -53,7 +53,7 @@ date,repository,user,points
 
 ### Summary Output
 
-Display a formatted summary directly in the terminal. The summary now includes a **Per-User** breakdown.
+Display a formatted summary directly in the terminal. The summary now includes **Emoji Summary** and **Top Reactors** breakdowns.
 
 ```bash
 python3 fetch_reactions.py --repos owner/repo1 --summary --all-users
