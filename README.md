@@ -65,6 +65,12 @@ To use this script, you need the following tools installed in your environment (
     ./fetch_reactions.sh -s owner/repo1 owner/repo2
     ```
 
+5.  **Generate a Summary from an Existing CSV File:**
+    Use the `-f <file>` flag to generate a summary from a previously created `reactions.csv` file. This avoids querying the API again.
+    ```bash
+    ./fetch_reactions.sh -f reactions.csv
+    ```
+
     This will produce output similar to the following:
 
     ```
