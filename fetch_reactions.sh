@@ -10,13 +10,26 @@ COPILOT_USER="github-actions[bot]"
 
 # --- スクリプト本体 ---
 
+show_summary=false
+
+# -s オプションをパースする
+while getopts "s" opt; do
+  case $opt in
+    s)
+      show_summary=true
+      ;;
+    \?)
+      echo "無効なオプションです: -$OPTARG" >&2
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND-1)) # パースしたオプションを引数リストから削除
+
 if [ "$#" -eq 0 ]; then
-  echo "エラー: 1つ以上のリポジトリを引数に指定してください (例: owner/repo)" >&2
+  echo "エラー: 1つ以上のリポジトリを引数に指定してください (例: ./fetch_reactions.sh owner/repo)" >&2
   exit 1
 fi
-
-# ヘッダー出力
-echo "date,repository,points"
 
 # リアクションを処理してCSV形式で出力する内部関数
 process_reactions() {
@@ -49,9 +62,10 @@ process_reactions() {
   done
 }
 
-# 引数で渡された全リポジトリをループ
+# --- データ収集 ---
+# スクリプトの出力を変数に格納する
+collected_data=$( \
 for repo in "$@"; do
-  # --- 対象PRの特定 (期間検索) ---
   pr_numbers=$(gh pr list -R "$repo" --search "created:$START_DATE..$END_DATE" --json number --jq '.[]?.number')
 
   for pr_number in $pr_numbers; do
@@ -59,31 +73,61 @@ for repo in "$@"; do
       continue
     fi
     
-    # --- Copilotユーザーでのフィルタリング ---
     JQ_FILTER=".[] | select(.user.login == \"$COPILOT_USER\")"
 
-    # 1. Issue形式のコメント (PRへの総合的なコメント)
-    gh api "repos/$repo/issues/$pr_number/comments?per_page=100" | \
-    jq -c "$JQ_FILTER" | \
-    while IFS= read -r comment; do
-      process_reactions "$comment" "$repo"
-    done
-
-    # 2. レビューコメント (コード行へのコメント)
-    gh api "repos/$repo/pulls/$pr_number/comments?per_page=100" | \
-    jq -c "$JQ_FILTER" | \
-    while IFS= read -r comment; do
-      process_reactions "$comment" "$repo"
-    done
-
-    # 3. レビュー本体 (複数のコメントをまとめたレビュー)
-    gh api "repos/$repo/pulls/$pr_number/reviews?per_page=100" | \
-    jq -c "$JQ_FILTER" | \
-    while IFS= read -r review; do
-      # .bodyが空でないもののみ対象
-      if echo "$review" | jq -e '.body != null and .body != ""' > /dev/null; then
-        process_reactions "$review" "$repo"
-      fi
-    done
+    gh api "repos/$repo/issues/$pr_number/comments?per_page=100" | jq -c "$JQ_FILTER" | while IFS= read -r c; do process_reactions "$c" "$repo"; done
+    gh api "repos/$repo/pulls/$pr_number/comments?per_page=100" | jq -c "$JQ_FILTER" | while IFS= read -r c; do process_reactions "$c" "$repo"; done
+    gh api "repos/$repo/pulls/$pr_number/reviews?per_page=100" | jq -c "$JQ_FILTER" | while IFS= read -r r; do if echo "$r" | jq -e '.body != null and .body != ""' > /dev/null; then process_reactions "$r" "$repo"; fi; done
   done
 done
+)
+
+# --- 結果の出力 ---
+
+if [ "$show_summary" = true ]; then
+  # サマリー表示モード
+  if [ -z "$collected_data" ]; then
+    echo "指定された期間とリポジトリに、対象となるリアクションは見つかりませんでした。"
+    exit 0
+  fi
+
+  # awkで処理するためにヘッダーを付ける
+  full_csv_data="date,repository,points\n$collected_data"
+
+  echo "--- 日別サマリー ---"
+  echo "$full_csv_data" | awk -F, 'NR>1 {
+      count[$1]++; 
+      sum[$1]+=$3;
+  } 
+  END {
+      print "日付          | リアクション数 | 合計ポイント | 平均ポイント";
+      print "--------------|----------------|--------------|--------------";
+      for (date in sum) {
+          printf "%-13s | %-14d | %-12d | %.2f\n", date, count[date], sum[date], sum[date]/count[date];
+      }
+  }' | sort -k1
+
+  echo ""
+  echo "--- 週別サマリー ---"
+  echo "$full_csv_data" | awk -F, 'NR>1 {
+      cmd = "date -d " $1 " +%Y-%V"; 
+      cmd | getline week; 
+      close(cmd); 
+      count[week]++; 
+      sum[week]+=$3;
+  } 
+  END {
+      print "週             | リアクション数 | 合計ポイント | 平均ポイント";
+      print "---------------|----------------|--------------|--------------";
+      for (week in sum) {
+          printf "%-15s | %-14d | %-12d | %.2f\n", week, count[week], sum[week], sum[week]/count[week];
+      }
+  }' | sort -k1
+
+else
+  # CSV出力モード (デフォルト)
+  echo "date,repository,points"
+  if [ -n "$collected_data" ]; then
+    echo "$collected_data"
+  fi
+fi

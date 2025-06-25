@@ -58,6 +58,12 @@ To use this script, you need the following tools installed in your environment (
     Execute the script, passing the target repositories as arguments. The output will be redirected to a CSV file.
     ```bash
     ./fetch_reactions.sh owner/repo1 owner/repo2 > reactions.csv
+
+4.  **Display a Summary in the Terminal (Optional):**
+    Use the `-s` flag to display a formatted summary directly in your terminal instead of creating a CSV file.
+    ```bash
+    ./fetch_reactions.sh -s owner/repo1 owner/repo2
+    ```
     ```
 
 ### Emoji Scoring System
