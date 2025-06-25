@@ -40,16 +40,37 @@ The script is controlled via command-line arguments.
     ```bash
     python3 fetch_reactions.py --repos owner/repo1 owner/repo2 > reactions.csv
     ```
+    The `reactions.csv` file will look like this:
+    ```csv
+    date,repository,points
+    2025-06-25,owner/repo1,3
+    2025-06-26,owner/repo1,1
+    2025-06-26,owner/repo2,-1
+    ```
 
 -   **Display a summary directly:**
     ```bash
     python3 fetch_reactions.py --repos owner/repo1 --summary
+    ```
+    The output will look like this:
+    ```
+    --- Daily Summary ---
+    Date          | Reactions | Total Points | Average Points  
+    ------------------------------------------------------------
+    2025-06-25    | 1         | 3            | 3.00            
+    2025-06-26    | 2         | 0            | 0.00            
+
+    --- Weekly Summary ---
+    Week          | Reactions | Total Points | Average Points  
+    ------------------------------------------------------------
+    2025-26       | 3         | 3            | 1.00            
     ```
 
 -   **Generate a summary from an existing file:**
     ```bash
     python3 fetch_reactions.py --file reactions.csv
     ```
+    The output will be the same summary format as above.
 
 ### All Options
 
