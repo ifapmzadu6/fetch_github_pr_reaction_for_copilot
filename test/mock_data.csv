@@ -1,0 +1,7 @@
+date,repository,user,points
+2025-06-20,test/repo,user-a,3
+2025-06-20,test/repo,user-b,2
+2025-06-21,test/repo,user-a,-1
+2025-06-21,test/repo,user-c,3
+2025-06-28,test/repo,user-b,1
+2025-06-28,test/repo,user-a,3
