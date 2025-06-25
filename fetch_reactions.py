@@ -127,7 +127,14 @@ def show_summary(csv_data):
 
     daily_data = defaultdict(lambda: {"count": 0, "sum": 0})
     weekly_data = defaultdict(lambda: {"count": 0, "sum": 0})
-    user_data = defaultdict(lambda: {"count": 0, "sum": 0})
+    user_data = defaultdict(lambda: {"count": 0, "sum": 0, "reactions": defaultdict(int)})
+    emoji_data = defaultdict(int)
+
+    # ポイントから絵文字への逆引きマップを作成
+    # 同じポイントの絵文字は代表的なものを一つ選ぶ
+    POINTS_TO_EMOJI = {
+        3: "👍", 2: "❤️", 1: "🚀", -1: "🤔", -2: "👎", 0: "👀"
+    }
 
     for line in lines[1:]:
         try:
@@ -139,13 +146,19 @@ def show_summary(csv_data):
         
         daily_data[date_str]["count"] += 1
         daily_data[date_str]["sum"] += points
+        
         week_str = dt.strftime("%Y-%V")
         weekly_data[week_str]["count"] += 1
         weekly_data[week_str]["sum"] += points
+        
         user_data[user]["count"] += 1
         user_data[user]["sum"] += points
+        
+        emoji = POINTS_TO_EMOJI.get(points, "❓")
+        emoji_data[emoji] += 1
+        user_data[user]["reactions"][emoji] += 1
 
-    print("--- Daily Summary ---")
+    print("--- Overall Summary ---")
     print(f"{'Date':<13} | {'Reactions':<9} | {'Total Points':<12} | {'Average Points':<16}")
     print("-" * 60)
     for date, data in sorted(daily_data.items()):
@@ -159,10 +172,16 @@ def show_summary(csv_data):
         avg = data["sum"] / data["count"]
         print(f"{week:<13} | {data['count']:<9} | {data['sum']:<12} | {avg:<16.2f}")
 
-    print("\n--- Per-User Summary ---")
+    print("\n--- Emoji Summary ---")
+    print(f"{'Emoji':<7} | {'Count':<9}")
+    print("-" * 20)
+    for emoji, count in sorted(emoji_data.items(), key=lambda item: item[1], reverse=True):
+        print(f"{emoji:<7} | {count:<9}")
+
+    print("\n--- Top Reactors (by Total Points) ---")
     print(f"{'User':<20} | {'Reactions':<9} | {'Total Points':<12} | {'Average Points':<16}")
     print("-" * 67)
-    for user, data in sorted(user_data.items(), key=lambda item: item[1]['sum'], reverse=True):
+    for user, data in sorted(user_data.items(), key=lambda item: item[1]['sum'], reverse=True)[:10]: # 上位10名
         avg = data["sum"] / data["count"]
         print(f"{user:<20} | {data['count']:<9} | {data['sum']:<12} | {avg:<16.2f}")
 
