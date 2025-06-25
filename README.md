@@ -64,6 +64,21 @@ To use this script, you need the following tools installed in your environment (
     ```bash
     ./fetch_reactions.sh -s owner/repo1 owner/repo2
     ```
+
+    This will produce output similar to the following:
+
+    ```
+    --- 日別サマリー ---
+    日付          | リアクション数 | 合計ポイント | 平均ポイント
+    --------------|----------------|--------------|--------------
+    2025-06-25    | 2              | 5            | 2.50
+    2025-06-26    | 5              | 11           | 2.20
+
+    --- 週別サマリー ---
+    週             | リアクション数 | 合計ポイント | 平均ポイント
+    ---------------|----------------|--------------|--------------
+    2025-26        | 7              | 16           | 2.29
+    ```
     ```
 
 ### Emoji Scoring System
