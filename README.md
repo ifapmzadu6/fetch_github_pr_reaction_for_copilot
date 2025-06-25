@@ -141,16 +141,11 @@ END {
 
 ### Collecting Reactions from All Users
 
-To collect reactions from all users (not just Copilot), find the `JQ_FILTER` variable in the script and change it as follows:
+Use the `-a` flag to fetch reactions from all users' comments, not just Copilot's.
 
-**From (Copilot only):**
 ```bash
-JQ_FILTER=".[] | select(.user.login == \"$COPILOT_USER\")"
-```
-
-**To (All users):**
-```bash
-JQ_FILTER=".[]"
+# Output summary for all users' reactions
+./fetch_reactions.sh -s -a owner/repo
 ```
 
 ## License
