@@ -87,28 +87,28 @@ done
 if [ "$show_summary" = true ]; then
   # サマリー表示モード
   if [ -z "$collected_data" ]; then
-    echo "指定された期間とリポジトリに、対象となるリアクションは見つかりませんでした。"
+    echo "No applicable reactions found for the specified period and repositories."
     exit 0
   fi
 
   # awkで処理するためにヘッダーを付ける
   full_csv_data="date,repository,points\n$collected_data"
 
-  echo "--- 日別サマリー ---"
+  echo "--- Daily Summary ---"
   echo "$full_csv_data" | awk -F, 'NR>1 {
       count[$1]++; 
       sum[$1]+=$3;
   } 
   END {
-      print "日付          | リアクション数 | 合計ポイント | 平均ポイント";
-      print "--------------|----------------|--------------|--------------";
+      print "Date          | Reactions | Total Points | Average Points";
+      print "--------------|-----------|--------------|----------------";
       for (date in sum) {
-          printf "%-13s | %-14d | %-12d | %.2f\n", date, count[date], sum[date], sum[date]/count[date];
+          printf "%-13s | %-9d | %-12d | %.2f\n", date, count[date], sum[date], sum[date]/count[date];
       }
   }' | sort -k1
 
   echo ""
-  echo "--- 週別サマリー ---"
+  echo "--- Weekly Summary ---"
   echo "$full_csv_data" | awk -F, 'NR>1 {
       cmd = "date -d " $1 " +%Y-%V"; 
       cmd | getline week; 
@@ -117,10 +117,10 @@ if [ "$show_summary" = true ]; then
       sum[week]+=$3;
   } 
   END {
-      print "週             | リアクション数 | 合計ポイント | 平均ポイント";
-      print "---------------|----------------|--------------|--------------";
+      print "Week          | Reactions | Total Points | Average Points";
+      print "--------------|-----------|--------------|----------------";
       for (week in sum) {
-          printf "%-15s | %-14d | %-12d | %.2f\n", week, count[week], sum[week], sum[week]/count[week];
+          printf "%-13s | %-9d | %-12d | %.2f\n", week, count[week], sum[week], sum[week]/count[week];
       }
   }' | sort -k1
 
