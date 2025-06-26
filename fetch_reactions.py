@@ -21,6 +21,24 @@ POINTS_MAP = {
     "THUMBS_DOWN": -2,   # 👎
 }
 
+def run_gh_command(command_args):
+    """ghコマンドを実行し、結果をJSONとしてパースして返す"""
+    cmd = ["gh"] + command_args
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding='utf-8'
+        )
+        return json.loads(result.stdout)
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+        # print(f"gh command Error: {e}", file=sys.stderr)
+        # if hasattr(e, 'stderr'):
+        #     print(f"Stderr: {e.stderr}", file=sys.stderr)
+        return None
+
 # --- GraphQL クエリ ---
 # このクエリは、指定されたリポジリとPR番号について、
 # 関連するコメント、レビュー、リアクションを一度に取得します。
