@@ -8,6 +8,8 @@ The script aggregates reactions based on a point system, allowing for quantitati
 
 -   **Granular Analysis**: Collects reactions on a per-user basis.
 -   **Comprehensive Summaries**: Displays summaries broken down by day, week, and user.
+-   **Review Quality Metrics**: Calculates negative reaction rates to assess review quality and identifies potential low-quality reviews.
+-   **Copilot Coverage Detection**: Identifies PRs where GitHub Copilot didn't provide any comments, helping track review coverage.
 -   **Robust and Maintainable**: Written in Python for better error handling and easier maintenance.
 -   **Multi-Repository Support**: Scans one or more specified repositories.
 -   **Date Range Filtering**: Collects data from Pull Requests created within a defined period.
@@ -61,7 +63,7 @@ python3 fetch_reactions.py --repos owner/repo1 --summary --all-users
 
 The output will look like this:
 ```
---- Daily Summary ---
+--- Overall Summary ---
 Date          | Reactions | Total Points | Average Points  
 ------------------------------------------------------------
 2025-06-25    | 1         | 3            | 3.00            
@@ -72,21 +74,38 @@ Week          | Reactions | Total Points | Average Points
 ------------------------------------------------------------
 2025-26       | 3         | 3            | 1.00            
 
+--- Emoji Summary ---
+Emoji   | Count    
+-----------------
+👍      | 2        
+🤔      | 1        
+
 --- Per-User Summary ---
 User                 | Reactions | Total Points | Average Points  
 -------------------------------------------------------------------
 some-user            | 1         | 3            | 3.00            
 another-user         | 1         | 1            | 1.00            
 dev-1                | 1         | -1           | -1.00           
+
+--- Review Quality Metrics ---
+Total Reactions: 3
+Negative Reactions: 1 (33.3%)
+⚠️ High negative reaction rate - Review quality may be low
+
+--- PRs without Copilot Comments ---
+Total PRs without comments: 2
+PR Numbers: 123, 125
 ```
 
 ### Generate Summary from File
 
-Generate the same three-part summary from a previously created CSV file.
+Generate the comprehensive summary (including quality metrics) from a previously created CSV file.
 
 ```bash
 python3 fetch_reactions.py --file reactions.csv
 ```
+
+**Note**: When analyzing from a file, the "PRs without Copilot Comments" section will not be available since this information is only collected during live data fetching.
 
 ### All Options
 
@@ -113,6 +132,18 @@ The script uses the following point system, which can be customized in the `POIN
 | 🤔 `confused` |   -1   |
 | 👎 `-1`      |   -2   |
 | *Other*      |    0   |
+
+## Understanding the Quality Metrics
+
+### Review Quality Assessment
+- **Negative Reaction Rate**: Percentage of reactions that are negative (confused 🤔 or thumbs down 👎)
+- **Quality Warning**: If negative reactions exceed 20%, the tool flags potential review quality issues
+- **Coverage Tracking**: Identifies PRs where GitHub Copilot provided no comments, indicating potential coverage gaps
+
+### Interpreting Results
+- **High negative rate (>20%)**: May indicate Copilot reviews are unhelpful or incorrect
+- **Many PRs without comments**: Suggests Copilot isn't being triggered consistently
+- **Low average points**: Could mean reviews lack value or are confusing users
 
 ## License
 
